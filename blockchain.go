@@ -13,15 +13,16 @@ type Block struct {
 	nonce        int
 	previousHash [32]byte
 	timestamp    int64
-	transactions []string
+	transactions []*Transaction
 }
 
 // creating a new block instance
-func NewBlock(nonce int, previousHash [32]byte) *Block {
+func NewBlock(nonce int, previousHash [32]byte, transactions []*Transaction) *Block {
 	b := new(Block)
 	b.timestamp = time.Now().UnixNano()
 	b.nonce = nonce
 	b.previousHash = previousHash
+	b.transactions = transactions
 
 	return b
 }
@@ -43,10 +44,10 @@ func (b *Block) Hash() [32]byte {
 // as an argument into json.Marshal or json.MarshalIndent
 func (b *Block) MarshalJSON() ([]byte, error) {
 	return json.Marshal(struct {
-		Timestamp    int64    `json:"timestamp"`
-		Nonce        int      `json:"nonce"`
-		PreviousHash [32]byte `json:"previous_hash"`
-		Transactions []string `json:"transactions"`
+		Timestamp    int64          `json:"timestamp"`
+		Nonce        int            `json:"nonce"`
+		PreviousHash [32]byte       `json:"previous_hash"`
+		Transactions []*Transaction `json:"transactions"`
 	}{
 		Timestamp:    b.timestamp,
 		Nonce:        b.nonce,
@@ -87,6 +88,42 @@ func (bc *Blockchain) Print() {
 		block.Print()
 	}
 	fmt.Printf("%s\n", strings.Repeat("*", 25))
+}
+
+type Transaction struct {
+	senderBlockchainAddress   string
+	receiverBlockchainAddress string
+	value                     float32
+}
+
+// create new transaction
+func NewTransaction(sender string, receiver string, value float32) *Transaction {
+	return &Transaction{
+		sender,
+		receiver,
+		value,
+	}
+}
+
+// print transaction
+func (t *Transaction) Print() {
+	fmt.Printf("%s\n", strings.Repeat("_", 40))
+	fmt.Printf(" sender_blockchain_address         %s\n", t.senderBlockchainAddress)
+	fmt.Printf(" receiver_blockchain_address       %s\n", t.receiverBlockchainAddress)
+	fmt.Printf(" value                             %.1f\n", t.value)
+}
+
+// martialling transaction data into json
+func (t *Transaction) MarshalJSON() ([]byte, error) {
+	return json.Marshal(struct {
+		Sender   string  `json:"sender_blockchain_address"`
+		Receiver string  `json:"receiver_blockchain_address"`
+		Value    float32 `json:"value"`
+	}{
+		Sender:   t.senderBlockchainAddress,
+		Receiver: t.receiverBlockchainAddress,
+		Value:    t.value,
+	})
 }
 
 func init() {
